@@ -265,8 +265,46 @@ const generationConfig = {
 }
 const model = await getGenerativeModel(API_KEY, { model: modelName });
 window.model = model
+
+async function ytsr(q) {
+    if (!q)
+        return {}
+    let trimmed = q.trim()
+    if (!(trimmed.length > 0))
+        return {}
+    try {
+        let response = await fetchData('https://vercel-scribe.vercel.app/api/hello?url=https://www.youtube.com/search?q=' + encodeURIComponent(trimmed))
+        let html = response.data
+        let preamble = "var ytInitialData = {"
+        let idx1 = html.indexOf(preamble)
+        let sub = html.substring(idx1)
+        let idx2 = sub.indexOf("};")
+        let ytInitialData = sub.substring(0,idx2+1)
+        let jsonString = ytInitialData.substring(preamble.length-1)
+        let json = JSON.parse(jsonString)
+        let res = json.contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents
+        let results = []
+        for (let r of res) {
+            if (!(r.itemSectionRenderer && r.itemSectionRenderer.contents))
+                continue
+            let items = r.itemSectionRenderer.contents
+            for (let i of items) {
+                if (i.videoRenderer && i.videoRenderer.publishedTimeText) {
+                    let r = i.videoRenderer
+                    let obj = {id: r.videoId, name: r.title.runs[0].text, duration: r.lengthText.simpleText, publishedTimeText: r.publishedTimeText.simpleText}
+                    results.push(obj)
+                }
+            }
+        }
+        return { items: results }
+    } catch (e) {
+        console.log('setSearch error',e)
+        return {}
+    }
+}
+
 async function search(q) {
-  let json = await (await fetch('/yts?q=' + encodeURIComponent(q))).json()
+  let json = await ytsr(q)
   if (json.error)
     items.innerHTML = 'Error:' + json.error
   else if (json.items) {
