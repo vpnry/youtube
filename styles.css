@@ -425,7 +425,7 @@ input[type='color'] {
     max-width: calc(100% - 32px);
     flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
 }
 @media print {
     #col1 {
