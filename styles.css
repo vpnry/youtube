@@ -397,10 +397,10 @@ input[type='color'] {
 }
 
 .github-icon {
-    position: absolute;
+    position: fixed;
     top: 10px;
     right: 10px;
-    font-size: 24px;
+    font-size: 48px;
     color: #000;
     text-decoration: none;
 }
