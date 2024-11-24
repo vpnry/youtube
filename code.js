@@ -571,9 +571,6 @@ function buildWords(words) {
             continue
         let span = document.createElement('span')
         span.textContent = w.o + ' '
-        /*if (w.o.indexOf('`') !== -1) {
-          span.innerHTML = '<code>' + w.o.replaceAll('`','') + '</code> '
-        }*/
         if (w.s !== undefined) {
             span.start = w.s
             span.end = w.e
@@ -583,14 +580,7 @@ function buildWords(words) {
                     realplayer.pause()
                 else
                     play(span.start)
-                //let res = findSentence(evt.target)
-                //console.log(res)
             })
-            /*span.addEventListener('mousemove',(evt) => {
-              absorb(evt)
-              if (evt.buttons && !span.classList.contains('yawas'))
-                span.classList.add('yawas')
-            })*/
         }
         if (p) {
             p.appendChild(span)
@@ -1360,5 +1350,6 @@ fontWeight.oninput = () => ctx.font = `${fontWeight.value} ${fontSize.value}px `
 
 let searchTerm = window.location.hash.substring(1).trim()
 if (searchTerm > '') {
+    q.value = searchTerm
     search(searchTerm)
 }
