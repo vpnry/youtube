@@ -412,7 +412,8 @@ input[type='color'] {
 #myform {
     margin: 16px auto;
     display: flex;
-    max-width: 320px;
+    width: 600px;
+    max-width: calc(100% - 32px);
     flex-direction: column;
     justify-content: center;
     align-items: center;
