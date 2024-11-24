@@ -274,6 +274,7 @@ async function ytsr(q) {
         return {}
     try {
         let response = await fetchData('https://vercel-scribe.vercel.app/api/hello?url=https://www.youtube.com/search?q=' + encodeURIComponent(trimmed))
+        console.log('response=',response)
         let html = response.data
         let preamble = "var ytInitialData = {"
         let idx1 = html.indexOf(preamble)
