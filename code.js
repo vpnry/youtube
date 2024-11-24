@@ -273,7 +273,7 @@ async function ytsr(q) {
     if (!(trimmed.length > 0))
         return {}
     try {
-        let response = await fetchData('https://vercel-scribe.vercel.app/api/hello?url=https://www.youtube.com/search?q=' + encodeURIComponent(trimmed))
+        let response = await fetchData('https://vercel-scribe.vercel.app/api/hello?url=' + encodeURIComponent('https://www.youtube.com/search?q=' + trimmed), true)
         console.log('response=',response)
         let html = response.data
         let preamble = "var ytInitialData = {"
@@ -1257,11 +1257,14 @@ function unescapeXml(escapedXml, parser) {
   const doc = parser.parseFromString(escapedXml, "text/html")
   return doc.documentElement.textContent;
 }
-async function fetchData(url) {
+async function fetchData(url, json = false) {
   const response = await fetch(url)
-  const text = await response.text()
-  return text
+  if (json)
+    return await response.json()
+  else
+    return await response.text()
 }
+
 async function getChunks(url) {
   try {
     const transcript = await fetchData(url)
