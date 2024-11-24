@@ -230,6 +230,7 @@ async function search(q) {
     if (json.error)
         items.innerHTML = 'Error:' + json.error
     else if (json.items) {
+        window.location.href = '#' + q
         items.innerHTML = ''
         for (let item of json.items) {
             let d = document.createElement('div')
