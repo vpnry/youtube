@@ -409,7 +409,7 @@ input[type='color'] {
     color: #007bff;
 }
 
-#myform {
+#myform, #items {
     margin: 16px auto;
     display: flex;
     max-width: 320px;
