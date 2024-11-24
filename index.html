@@ -1226,7 +1226,6 @@ async function getBestPassages(text) {
       async function transcribe() {
         console.log('transcribe')
         const prompt = "Generate audio diarization for this interview, and output a simple json format with keys: 'speaker', 'transcription', 'start', 'end'. If you can infer the speaker, please do. If not, use speaker A, speaker B, etc."
-        //const b64 = await convertAudioFromUrlToBase64('/static/scribe/E1770.mp3')
         const b64 = await convertAudioFromUrlToBase64('/static/cached/5.m4a')
         const result = await model.generateContent([
             {
@@ -1247,17 +1246,14 @@ async function getBestPassages(text) {
         let payload = JSON.parse(res.substring(s,e+1))
         console.log(payload)
       }
-      //transcribe()
       async function chapterize(transcript) {
         // examples from https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/gemini-1.5-flash-001?hl=en
         const chapterPrompt = `Chapterize the video content by grouping the video content into chapters and providing a name for each chapter with its timecode. Please only capture key events and highlights. If you are not sure about any info, please do not make it up. Return the result in the JSON format with keys 'chapterName' and 'timecode'. Here is the video content: `
         //const result = await model.generateContent([`${chapterPrompt} ${transcript}`])
         const result = await getModelAnswer(`${chapterPrompt} ${transcript}`)
         let json = result.response.text()
-        //console.log(json)
+        console.log(json)
       }
-      const stopWords = `i, we're, they've, they're, me, my, really, myself, we, our, ourselves, you, your, yourselves, he, him, his, himself, she, her, herself, it, its, itself, they, them, their, themselves, what, which, that, who, whom, this, that, these, those, am, is, are, was, were, be, been, being, have, has, had, having, do, does, did, doing, a, an, the, and, but, if, or, because, as, until, while, of, at, by, for, with, about, against, between, into, through, during, before, after, above, below, to, from, up, down, in, out, on, off, over, under, again, further, then, once, here, there, when, where, why, how, all, any, both, each, few, more, most, some, such, no, nor, not, only, own, same, so, than, too, very, can, will, just, must, should, may, might, mustn't, shouldn't, ought, shall, would, wouldn't, could, couldn't, if, unless, although, though, because, since, forasmuch, whereas, while, whilst, if, provided, assuming, given, notwithstanding`.split(',').map(a => a.trim()).filter(a => a > '').sort()
-      const randomWords = `Run, Windows, Mac, Use, COUPON, ZISKIND20, Gear, Links, New, MacBook, Air, Deal, Refurb, Great, Related, Videos, Mini, Visual, Studio, INSANE, Playlist, LET, CONNECT, SOCIAL, MEDIA, YOUTUBE, FACEBOOK, TWITTER`.split(',').map(a => a.trim().toLowerCase()).filter(a => a > '').sort()
       async function createVocabulary(videoId, description = '', languageCode = 'en') {
         const key = languageCode + '-vocab-' + videoId
         const prevVocab = await localforage.getItem(key)
@@ -1273,13 +1269,7 @@ async function getBestPassages(text) {
       }
 
       let ctx = canvas.getContext('2d')
-      /*punctuated.addEventListener('mousedown', (evt) => {
-        //realplayer.pause()
-        //punctuated.querySelectorAll('.highlighted').forEach(h => h.classList.remove('highlighted'))
-        //absorb(evt)
-      })*/
       let highlights = []
-      //punctuated.addEventListener('mouseup', () => {
       function addHighlight(evt) {
         absorb(evt)
         let s = window.getSelection().toString().trim()
@@ -1313,10 +1303,6 @@ async function getBestPassages(text) {
                 added.push(s)
               }
             }
-            /*if (added.length > 0) {
-              added[0].classList.add('yawasl')
-              added[added.length - 1].classList.add('yawasr')
-            }*/
           }
         }
       }
@@ -1348,15 +1334,7 @@ async function getBestPassages(text) {
       function drawStrokedText(ctx, text, x, y, fill = 'yellow', baseline = 'bottom', blur = null)
       {
         let w = ctx.measureText(text).width
-        //const x = (vw - w) / 2
-        //const y = vh - 16
-        //const x = (canvas.width - w) / 2
-        //const y = canvas.height - 16
         ctx.textBaseline = baseline
-        // using the solutions from @Simon Sarris and @Jackalope from
-        // https://stackoverflow.com/questions/7814398/a-glow-effect-on-html5-canvas
-        //ctx.save();
-        //ctx.strokeStyle = 'black';
         if (blur) {
           ctx.save()
           ctx.shadowBlur = blur.blur
@@ -1428,39 +1406,38 @@ async function getBestPassages(text) {
       }
 
       function roundRect(ctx, x, y, width, height, radius) {
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  //ctx.stroke();   
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        //ctx.stroke();   
 
-  ctx.fill();
-}
-function findCaptionAt(time) {
-  let p = punctuated.querySelectorAll('span')
-  let res = []
-  const delta = 1000
-  for (let w of p) {
-    const highlight = w.start >= (time - delta) && w.end <= (time + delta)
-    if (highlight)
-      res.push(w.textContent)
-    if (res.length > 10)
-      break
-  }
-  return res
-}
+        ctx.fill();
+      }
 
-window.findCaptionAt = findCaptionAt
+      function findCaptionAt(time) {
+        let p = punctuated.querySelectorAll('span')
+        let res = []
+        const delta = 1000
+        for (let w of p) {
+          const highlight = w.start >= (time - delta) && w.end <= (time + delta)
+          if (highlight)
+            res.push(w.textContent)
+          if (res.length > 10)
+            break
+        }
+        return res
+      }
+
       function drawVideo() {
         let w = canvas.width
         let h = vh * w / vw
-        //let h = canvas.height
         ctx.fillStyle = 'black'
         ctx.fillRect(0, 0, canvas.width, canvas.height)
         ctx.drawImage(realplayer,0,0,vw,vh,0,0,w,h)
@@ -1472,6 +1449,7 @@ window.findCaptionAt = findCaptionAt
         drawStrokedText(ctx,author.value,pad,pad,'white', 'top', {blur: 4, x: 2, y: 2, color: 'black'})
         requestAnimationFrame(drawVideo)
       }
+
       async function getSummary(videoId, transcript, lang = 'en', vocab) {
         const key = [lang,'sum',videoId].join('-')
         let d = await localforage.getItem(key)
@@ -1495,223 +1473,223 @@ window.findCaptionAt = findCaptionAt
       let vw = 0
       let vh = 0
 
-  async function postData(url = "", data = {}) {
-    const response = await fetch(url, {
-      method: "POST",
-      mode: "cors",
-      cache: "no-cache",
-      credentials: "same-origin",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      redirect: "follow",
-      referrerPolicy: "no-referrer",
-      body: JSON.stringify(data),
-    });
+      async function postData(url = "", data = {}) {
+        const response = await fetch(url, {
+          method: "POST",
+          mode: "cors",
+          cache: "no-cache",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          redirect: "follow",
+          referrerPolicy: "no-referrer",
+          body: JSON.stringify(data),
+        });
 
-    return response.json();
-  }
-  async function getUserData(videoId) {
-    let data = await localforage.getItem(videoId)
-    if (!data)
-      data = {highlights:[]}
-    if (!data.highlights)
-      data.highlights = []
-    let hash = window.location.hash
-    if (hash > '') {
-      let chunks = hash.substring(1).split(',')
-      let hashHighlights = []
-      for (let c of chunks) {
-        let part = c.split('-')
-        if (part.length === 2) {
-          try {
-            let start = parseInt(part[0])
-            let end = parseInt(part[1])
-            hashHighlights.push({start,end,hash:true})
-          } catch (e) {}
+        return response.json();
+      }
+      async function getUserData(videoId) {
+        let data = await localforage.getItem(videoId)
+        if (!data)
+          data = {highlights:[]}
+        if (!data.highlights)
+          data.highlights = []
+        let hash = window.location.hash
+        if (hash > '') {
+          let chunks = hash.substring(1).split(',')
+          let hashHighlights = []
+          for (let c of chunks) {
+            let part = c.split('-')
+            if (part.length === 2) {
+              try {
+                let start = parseInt(part[0])
+                let end = parseInt(part[1])
+                hashHighlights.push({start,end,hash:true})
+              } catch (e) {}
+            }
+          }
+          let combined = data.highlights.concat(hashHighlights)
+          let unique = new Set(combined)
+          data.highlights = [...unique.values()]
         }
+        return data
       }
-      let combined = data.highlights.concat(hashHighlights)
-      let unique = new Set(combined)
-      data.highlights = [...unique.values()]
-    }
-    return data
-  }
-  function getTranscriptURLAndLanguage(yt, preferredLanguage = 'en') {
-    const captions = yt.captions ? yt.captions.playerCaptionsTracklistRenderer : null
-    if (!captions || !captions.captionTracks)
-      return {defaultLanguage:'en',transcripts:{}}
-    const idx = captions.defaultAudioTrackIndex ?? 0
-    const audioTrack = captions.audioTracks[idx]
-    let defaultCaptionTrackIndex = audioTrack.defaultCaptionTrackIndex ?? 0
-    if (!defaultCaptionTrackIndex && audioTrack.captionTrackIndices && audioTrack.captionTrackIndices.length > 0)
-      defaultCaptionTrackIndex = audioTrack.captionTrackIndices[0]
-    const captionTrack = captions.captionTracks[defaultCaptionTrackIndex]
-    const translatable = captions.captionTracks.filter(c => c.isTranslatable === true)
-    let defaultLanguage = 'en'
-    let obj = {}
-    if (captionTrack) {
-      defaultLanguage = captionTrack.languageCode
-      if (defaultLanguage.indexOf('-') !== -1)
-        defaultLanguage = defaultLanguage.split('-')[0]
-      obj[defaultLanguage] = captionTrack.baseUrl
-    }
-    // for iOS, we always want the English track because the DistilBert only works with English for now
-    if (!obj['en']) {
-      if (captionTrack && captionTrack.isTranslatable) {
-        obj['en'] = captionTrack.baseUrl + '&tlang=en'
-      } else if (translatable.length > 0) {
-        obj['en'] = translatable[0].baseUrl + '&tlang=en'
+      function getTranscriptURLAndLanguage(yt, preferredLanguage = 'en') {
+        const captions = yt.captions ? yt.captions.playerCaptionsTracklistRenderer : null
+        if (!captions || !captions.captionTracks)
+          return {defaultLanguage:'en',transcripts:{}}
+        const idx = captions.defaultAudioTrackIndex ?? 0
+        const audioTrack = captions.audioTracks[idx]
+        let defaultCaptionTrackIndex = audioTrack.defaultCaptionTrackIndex ?? 0
+        if (!defaultCaptionTrackIndex && audioTrack.captionTrackIndices && audioTrack.captionTrackIndices.length > 0)
+          defaultCaptionTrackIndex = audioTrack.captionTrackIndices[0]
+        const captionTrack = captions.captionTracks[defaultCaptionTrackIndex]
+        const translatable = captions.captionTracks.filter(c => c.isTranslatable === true)
+        let defaultLanguage = 'en'
+        let obj = {}
+        if (captionTrack) {
+          defaultLanguage = captionTrack.languageCode
+          if (defaultLanguage.indexOf('-') !== -1)
+            defaultLanguage = defaultLanguage.split('-')[0]
+          obj[defaultLanguage] = captionTrack.baseUrl
+        }
+        // for iOS, we always want the English track because the DistilBert only works with English for now
+        if (!obj['en']) {
+          if (captionTrack && captionTrack.isTranslatable) {
+            obj['en'] = captionTrack.baseUrl + '&tlang=en'
+          } else if (translatable.length > 0) {
+            obj['en'] = translatable[0].baseUrl + '&tlang=en'
+          }
+        }
+        if (preferredLanguage !== 'en') {
+          if (captionTrack && captionTrack.isTranslatable) {
+            obj[preferredLanguage] = captionTrack.baseUrl + '&tlang=' + preferredLanguage
+          } else if (translatable.length > 0) {
+            obj[preferredLanguage] = translatable[0].baseUrl + '&tlang=' + preferredLanguage
+          }
+        }
+        const translationLanguages = {}
+        if (captions.translationLanguages) {
+          for (let l of captions.translationLanguages) {
+            translationLanguages[l.languageCode] = l.languageName.simpleText
+          }
+        }
+        return { defaultLanguage, transcripts: obj, translationLanguages }
       }
-    }
-    if (preferredLanguage !== 'en') {
-      if (captionTrack && captionTrack.isTranslatable) {
-        obj[preferredLanguage] = captionTrack.baseUrl + '&tlang=' + preferredLanguage
-      } else if (translatable.length > 0) {
-        obj[preferredLanguage] = translatable[0].baseUrl + '&tlang=' + preferredLanguage
-      }
-    }
-    const translationLanguages = {}
-    if (captions.translationLanguages) {
-      for (let l of captions.translationLanguages) {
-        translationLanguages[l.languageCode] = l.languageName.simpleText
-      }
-    }
-    return { defaultLanguage, transcripts: obj, translationLanguages }
-  }
-  async function getLocal(videoId, languageCode = 'en') {
-    const data = await getUserData(videoId)
-    if (data && data[languageCode]) {
-      return data
-    }
-    const payload = {
-      videoId,
-        "context": {
-            "client": {
-                "hl": "en",
-                "clientName": "WEB",
-                "clientVersion": "2.20210721.00.00",
-                "clientScreen": "WATCH",
-                "mainAppWebInfo": {
-                    "graftUrl": "/watch?v=" + videoId
+      async function getLocal(videoId, languageCode = 'en') {
+        const data = await getUserData(videoId)
+        if (data && data[languageCode]) {
+          return data
+        }
+        const payload = {
+          videoId,
+            "context": {
+                "client": {
+                    "hl": "en",
+                    "clientName": "WEB",
+                    "clientVersion": "2.20210721.00.00",
+                    "clientScreen": "WATCH",
+                    "mainAppWebInfo": {
+                        "graftUrl": "/watch?v=" + videoId
+                    }
+                },
+                "user": {
+                    "lockedSafetyMode": false
+                },
+                "request": {
+                    "useSsl": true,
+                    "internalExperimentFlags": [],
+                    "consistencyTokenJars": []
                 }
             },
-            "user": {
-                "lockedSafetyMode": false
+            "playbackContext": {
+                "contentPlaybackContext": {
+                    "vis": 0,
+                    "splay": false,
+                    "autoCaptionsDefaultOn": false,
+                    "autonavState": "STATE_NONE",
+                    "html5Preference": "HTML5_PREF_WANTS",
+                    "lactMilliseconds": "-1"
+                }
             },
-            "request": {
-                "useSsl": true,
-                "internalExperimentFlags": [],
-                "consistencyTokenJars": []
-            }
-        },
-        "playbackContext": {
-            "contentPlaybackContext": {
-                "vis": 0,
-                "splay": false,
-                "autoCaptionsDefaultOn": false,
-                "autonavState": "STATE_NONE",
-                "html5Preference": "HTML5_PREF_WANTS",
-                "lactMilliseconds": "-1"
-            }
-        },
-        "racyCheckOk": false,
-        "contentCheckOk": false
-    }
-    // https://stackoverflow.com/questions/67615278/get-video-info-youtube-endpoint-suddenly-returning-404-not-found
-    const json = await postData(
-    "https://release-youtubei.sandbox.googleapis.com/youtubei/v1/player", payload)
-    const obj = {}
-    if (json.error || json.videoDetails === undefined)
-      return {error: 'invalid video'}
-    for (let s of json.streamingData.formats)
-      console.log(decodeURIComponent(s.url))
-    for (let s of json.streamingData.adaptiveFormats)
-      console.log(decodeURIComponent(s.url))
-    obj.videoId = json.videoDetails.videoId
-    obj.chapters = json.videoDetails.chapters
-    obj.title = json.videoDetails.title
-    obj.description = json.videoDetails.shortDescription
-    obj.viewCount = json.videoDetails.viewCount
-    obj.duration = parseInt(json.videoDetails.lengthSeconds)
-    if (json.microformat && json.microformat.playerMicroformatRenderer)
-        obj.publishDate = json.microformat.playerMicroformatRenderer.publishDate
-    obj.thumbnail = `https://img.youtube.com/vi/${obj.videoId}/mqdefault.jpg`
-    const { defaultLanguage, transcripts, translationLanguages } = getTranscriptURLAndLanguage(json, languageCode)
-    obj.translationLanguages = translationLanguages
-    const languageCodes = Object.keys(transcripts)
-    obj.defaultLanguage = defaultLanguage ?? 'en'
-    //selectedLanguage = languages[languageCode]
-    for (let languageCode in transcripts) {
-      const chunks = await getChunks(transcripts[languageCode])
-      obj[languageCode] = {chunks}
-    }
-    return obj
-  }
-  function formatXML(xml) {
-    const docParser = new DOMParser()
-    const doc = docParser.parseFromString(xml,'application/xml')
-    let texts = doc.querySelectorAll('text')
-    let chunks = []
-    for (let t of texts) {
-      let start = parseFloat(t.getAttribute('start')) * 1000
-      let dur = parseFloat(t.getAttribute('dur')) * 1000
-      if (isNaN(dur))
-        dur = 0.01
-      let end = start + dur
-      let text = unescapeXml(t.textContent, docParser)
-      text = removeDuplicates(text).replace(/\s+/g,' '); // Laurent added replace
-      if (text > '') {
-        chunks.push({text, start, end, dur })
+            "racyCheckOk": false,
+            "contentCheckOk": false
+        }
+        // https://stackoverflow.com/questions/67615278/get-video-info-youtube-endpoint-suddenly-returning-404-not-found
+        const json = await postData(
+        "https://release-youtubei.sandbox.googleapis.com/youtubei/v1/player", payload)
+        const obj = {}
+        if (json.error || json.videoDetails === undefined)
+          return {error: 'invalid video'}
+        for (let s of json.streamingData.formats)
+          console.log(decodeURIComponent(s.url))
+        for (let s of json.streamingData.adaptiveFormats)
+          console.log(decodeURIComponent(s.url))
+        obj.videoId = json.videoDetails.videoId
+        obj.chapters = json.videoDetails.chapters
+        obj.title = json.videoDetails.title
+        obj.description = json.videoDetails.shortDescription
+        obj.viewCount = json.videoDetails.viewCount
+        obj.duration = parseInt(json.videoDetails.lengthSeconds)
+        if (json.microformat && json.microformat.playerMicroformatRenderer)
+            obj.publishDate = json.microformat.playerMicroformatRenderer.publishDate
+        obj.thumbnail = `https://img.youtube.com/vi/${obj.videoId}/mqdefault.jpg`
+        const { defaultLanguage, transcripts, translationLanguages } = getTranscriptURLAndLanguage(json, languageCode)
+        obj.translationLanguages = translationLanguages
+        const languageCodes = Object.keys(transcripts)
+        obj.defaultLanguage = defaultLanguage ?? 'en'
+        //selectedLanguage = languages[languageCode]
+        for (let languageCode in transcripts) {
+          const chunks = await getChunks(transcripts[languageCode])
+          obj[languageCode] = {chunks}
+        }
+        return obj
       }
-    }
-    return chunks
-  }
-  function removeDuplicates(text) {
-    //console.log(text)
-    let result = text.replace(/\b([\w']+)\s+\1\b/g,'$1');
-    result = result.replace(/\[.*\].?/g,'') // remove [MUSIC] etc
-    //result = result.replace(/\[Music].?/gi,'') // remove [MUSIC] etc
-    //console.log('without[music]=',result)
-    if (result === 'um' || result === 'uh' || result === 'um,' || result === 'uh,')
-      return ''
-    if (result.indexOf('um ') === 0)
-      result = result.substring(2)
-    if (result.indexOf('um, ') === 0)
-      result = result.substring(3)
-    if (result.endsWith(' um'))
-      result = result.substring(0,result.length-2)
-    result = result.replaceAll(' um ',' ')
-    result = result.replaceAll(' um, ',' ')
-    if (result.indexOf('uh ') === 0)
-      result = result.substring(2)
-    if (result.indexOf('uh, ') === 0)
-      result = result.substring(3)
-    if (result.endsWith(' uh'))
-      result = result.substring(0,result.length-2)
-    result = result.replaceAll(' uh ',' ')
-    result = result.replaceAll(' uh, ',' ')
-    //console.log('res=',result)
-    return result
-  }
-  function unescapeXml(escapedXml, parser) {
-    const doc = parser.parseFromString(escapedXml, "text/html")
-    return doc.documentElement.textContent;
-  }
-  async function fetchData(url) {
-    const response = await fetch(url)
-    const text = await response.text()
-    return text
-  }
-  async function getChunks(url) {
-    try {
-      const transcript = await fetchData(url)
-      return formatXML(transcript)
-    } catch (e) {
-      return []
-    }
-  }
+      function formatXML(xml) {
+        const docParser = new DOMParser()
+        const doc = docParser.parseFromString(xml,'application/xml')
+        let texts = doc.querySelectorAll('text')
+        let chunks = []
+        for (let t of texts) {
+          let start = parseFloat(t.getAttribute('start')) * 1000
+          let dur = parseFloat(t.getAttribute('dur')) * 1000
+          if (isNaN(dur))
+            dur = 0.01
+          let end = start + dur
+          let text = unescapeXml(t.textContent, docParser)
+          text = removeDuplicates(text).replace(/\s+/g,' '); // Laurent added replace
+          if (text > '') {
+            chunks.push({text, start, end, dur })
+          }
+        }
+        return chunks
+      }
+      function removeDuplicates(text) {
+        //console.log(text)
+        let result = text.replace(/\b([\w']+)\s+\1\b/g,'$1');
+        result = result.replace(/\[.*\].?/g,'') // remove [MUSIC] etc
+        //result = result.replace(/\[Music].?/gi,'') // remove [MUSIC] etc
+        //console.log('without[music]=',result)
+        if (result === 'um' || result === 'uh' || result === 'um,' || result === 'uh,')
+          return ''
+        if (result.indexOf('um ') === 0)
+          result = result.substring(2)
+        if (result.indexOf('um, ') === 0)
+          result = result.substring(3)
+        if (result.endsWith(' um'))
+          result = result.substring(0,result.length-2)
+        result = result.replaceAll(' um ',' ')
+        result = result.replaceAll(' um, ',' ')
+        if (result.indexOf('uh ') === 0)
+          result = result.substring(2)
+        if (result.indexOf('uh, ') === 0)
+          result = result.substring(3)
+        if (result.endsWith(' uh'))
+          result = result.substring(0,result.length-2)
+        result = result.replaceAll(' uh ',' ')
+        result = result.replaceAll(' uh, ',' ')
+        //console.log('res=',result)
+        return result
+      }
+      function unescapeXml(escapedXml, parser) {
+        const doc = parser.parseFromString(escapedXml, "text/html")
+        return doc.documentElement.textContent;
+      }
+      async function fetchData(url) {
+        const response = await fetch(url)
+        const text = await response.text()
+        return text
+      }
+      async function getChunks(url) {
+        try {
+          const transcript = await fetchData(url)
+          return formatXML(transcript)
+        } catch (e) {
+          return []
+        }
+      }
       async function punctuate(videoId, languageCode = 'en') {
         //let json = await (await fetch('/ytt?id=' + videoid + '&language=' + language)).json()
         let json = await getLocal(videoId, languageCode)
@@ -1733,10 +1711,8 @@ window.findCaptionAt = findCaptionAt
           timeline.max = realplayer.duration * 1000
           timeline.addEventListener('input',() => {
             updateTimeCaption(timeline.value / 1000)
-            //userJumps = true
             currentCaption = findCaptionAt(timeline.value)
             drawVideo()
-            //realplayer.currentTime = timeline.value / 1000
           })
           timeline.addEventListener('change',() => {
             updateTimeCaption(timeline.value / 1000)
@@ -1746,7 +1722,6 @@ window.findCaptionAt = findCaptionAt
             realplayer.currentTime = timeline.value / 1000
           })
 
-          console.log('loaded')
           vw = realplayer.videoWidth
           vh = realplayer.videoHeight
           canvas.width = 1280
@@ -1756,21 +1731,7 @@ window.findCaptionAt = findCaptionAt
           ctx.fillStyle = 'rgb(245,220,51)'
           drawVideo()
         }
-        let playerErrors = 0
-        realplayer.onerror = async (evt) => {
-          playerErrors++
-          /*if (playerErrors < 2) {
-            console.log('getting video')
-            try {
-              let json = await (await fetch('/ytt?c=1&id=' + videoid)).json()
-              if (json.videoUrl)
-                realplayer.src = json.videoUrl 
-            } catch (e) {}
-          }*/
-        }
-        realplayer.src = json.videoUrl || '/static/scribe/novideo.mp4'
-        //realplayer.src = '/static/scribe/novideo.mp4'
-        //console.log(json)
+        realplayer.src = json.videoUrl
         json.chunks = json[languageCode].chunks
         json.text = json.chunks.map(c => c.text).join(' ')
         let transcript = json.text
@@ -1796,11 +1757,6 @@ window.findCaptionAt = findCaptionAt
           let punctuatedText = prevPunctuatedText
           let punctuatedTimes = testDiff(wordTimes, punctuatedText)
           punctuated.innerHTML = ''
-          //captions.textContent = ''
-          //let passages = await getBestPassages(punctuatedText)
-          //let passages = await getBestPassages(transcript)
-          //console.log(passages)
-          //console.log(json.chunks)
           buildWords(punctuatedTimes)
           return
         }
@@ -1815,12 +1771,10 @@ window.findCaptionAt = findCaptionAt
           punctuated.innerHTML = 'No transcript was found'
           return
         } else if (res.length === 1) {
-          //punctuated.innerHTML = linkifyHtml(marked(res[0]), { target: '_blank'})
           let punctuatedText = res[0]
           localforage.setItem(puncKey, punctuatedText)
           let punctuatedTimes = testDiff(wordTimes, punctuatedText)
           punctuated.innerHTML = ''
-          //captions.textContent = ''
           buildWords(punctuatedTimes)
           return
         }
@@ -1844,15 +1798,12 @@ window.findCaptionAt = findCaptionAt
           //console.log(i, parts[i])
           punctuatedText += ' ' + fragments[i] + ' ' + parts[i].right
         }
-        //console.log(punctuatedText)
         punctuatedText = punctuatedText.replace(/,\s+/g,', ')
         localforage.setItem(puncKey, punctuatedText)
         let endTime = Date.now()
         console.log('duration=',endTime - startTime,json.duration)
-        //punctuated.innerHTML = linkifyHtml(marked(punctuatedText), { target: '_blank'});
         let punctuatedTimes = testDiff(wordTimes, punctuatedText)
         punctuated.innerHTML = ''
-        //captions.textContent = ''
         buildWords(punctuatedTimes)
       }
       
@@ -1864,7 +1815,6 @@ window.findCaptionAt = findCaptionAt
         let y = p.getBoundingClientRect().top + window.pageYOffset - player.offsetHeight
         window.scrollTo({left: 0, top: y, behavior: 'smooth'})
       }
-      //const params = new URLSearchParams(window.location.search)
       const languageCode = params.get('language') || 'en'
       let videoid = params.get('id') || params.get('v')
       if (videoid) {
@@ -1876,44 +1826,40 @@ window.findCaptionAt = findCaptionAt
       //searchBtn.onclick = () => search(q.value)
       myform.addEventListener('submit', (evt) => { absorb(evt); search(q.value) })
 
-      //const words = await (await fetch('/static/scribe/words.json')).json()
-      //console.log(words)
       highlighter.onmousedown = (evt) => addHighlight(evt)
       currentTime.onclick = (evt) => scrollToLive()
 
-    //let currentFont = 'Courgette'
-    let currentFont = 'Montserrat'
-    const fonts = ["Courgette","system-ui","Arsenal","Montserrat","Lobster Two","Lobster","Satisfy","Gloria Hallelujah","Kaushan Script","Covered By Your Grace","Abril Fatface","Righteous","Orbitron","Pacifico"];
-    for(let f of fonts){
-      let prop = document.createElement('div')
-      prop.className = 'prop'
-      prop.style.fontFamily = f
-      prop.textContent = f
-      if (f === currentFont)
-        prop.classList.add('selected')
-      prop.onclick = (evt) => {
-        currentFont = prop.textContent
-        //author.style.fontFamily = currentFont
-        ctx.font = `${fontWeight.value} ${fontSize.value}px ${currentFont}`
-        fontlist.querySelectorAll('.prop').forEach(p => {
-          if (p.textContent === currentFont)
-            p.classList.add('selected')
-          else
-            p.classList.remove('selected')
-        })
+      let currentFont = 'Montserrat'
+      const fonts = ["Courgette","system-ui","Arsenal","Montserrat","Lobster Two","Lobster","Satisfy","Gloria Hallelujah","Kaushan Script","Covered By Your Grace","Abril Fatface","Righteous","Orbitron","Pacifico"];
+      for(let f of fonts){
+        let prop = document.createElement('div')
+        prop.className = 'prop'
+        prop.style.fontFamily = f
+        prop.textContent = f
+        if (f === currentFont)
+          prop.classList.add('selected')
+        prop.onclick = (evt) => {
+          currentFont = prop.textContent
+          //author.style.fontFamily = currentFont
+          ctx.font = `${fontWeight.value} ${fontSize.value}px ${currentFont}`
+          fontlist.querySelectorAll('.prop').forEach(p => {
+            if (p.textContent === currentFont)
+              p.classList.add('selected')
+            else
+              p.classList.remove('selected')
+          })
+        }
+        fontlist.appendChild(prop)
       }
-      fontlist.appendChild(prop)
-    }
-    createvideo.onclick = (evt) => {
-      absorb(evt)
-      if (highlights.length === 0)
-        return alert(`Please highlight a few passages you'd like to cite`)
-      lastStart = null
-      play(highlights[0].start * 100)
-    }
-    fontSize.oninput = () => ctx.font = `${fontWeight.value} ${fontSize.value}px ` + currentFont
-    fontWeight.oninput = () => ctx.font = `${fontWeight.value} ${fontSize.value}px ` + currentFont
-    window.getModelAnswer = getModelAnswer
+      createvideo.onclick = (evt) => {
+        absorb(evt)
+        if (highlights.length === 0)
+          return alert(`Please highlight a few passages you'd like to cite`)
+        lastStart = null
+        play(highlights[0].start * 100)
+      }
+      fontSize.oninput = () => ctx.font = `${fontWeight.value} ${fontSize.value}px ` + currentFont
+      fontWeight.oninput = () => ctx.font = `${fontWeight.value} ${fontSize.value}px ` + currentFont
     </script>
   </body>
 </html>
