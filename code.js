@@ -313,7 +313,7 @@ async function search(q) {
     for (let item of json.items) {
       let d = document.createElement('div')
       d.className = 'r'
-      d.innerHTML = `<a href="?id=${item.id}"><img src="${item.thumbnail}"></a><div><a href="?id=${item.id}">${item.name || item.title}</a><div>${item.duration} - ${item.published}</div></div><br>`
+      d.innerHTML = `<a href="?id=${item.id}"><img src="https://img.youtube.com/vi/${item.id}/mqdefault.jpg"></a><div><a href="?id=${item.id}">${item.name || item.title}</a><div>${item.duration} - ${item.publishedTimeText || item.published}</div></div><br>`
       items.appendChild(d)
     }
   }
