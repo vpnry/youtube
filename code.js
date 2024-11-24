@@ -1193,7 +1193,8 @@ async function punctuate(videoId, languageCode = 'en') {
         chapters = computeChapters(json.description)
     vtitle.innerHTML = `<a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">${json.title}</a>`
     window.document.title = 'Scribe - ' + json.title
-    realplayer.ontimeupdate = (evt) => audioTimeUpdate(realplayer.currentTime)
+    initVideoPlayer(videoId)
+    /*realplayer.ontimeupdate = (evt) => audioTimeUpdate(realplayer.currentTime)
     realplayer.onloadedmetadata = (evt) => {
         realplayer.currentTime = 0.5
         timeline.max = realplayer.duration * 1000
@@ -1219,7 +1220,7 @@ async function punctuate(videoId, languageCode = 'en') {
         ctx.fillStyle = 'rgb(245,220,51)'
         drawVideo()
     }
-    realplayer.src = json.videoUrl
+    realplayer.src = json.videoUrl*/
     json.chunks = json[languageCode].chunks
     json.text = json.chunks.map(c => c.text).join(' ')
     let transcript = json.text
