@@ -224,6 +224,7 @@ h4 {
     align-items: center;
     margin-top: 8px;
     gap: 8px;
+    display: none;
 }
 
 #timeline {
@@ -290,6 +291,7 @@ input[type="range"]::-moz-range-thumb {
     background-color: black;
     aspect-ratio: 16/9;
     width: 100%;
+    display: none;
 }
 
 form {
