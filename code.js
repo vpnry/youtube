@@ -3,8 +3,13 @@ import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 const params = new URLSearchParams(window.location.search)
 let API_KEY = params.get('key')
 if (!API_KEY) {
-  API_KEY = prompt('Gemini API_KEY')
+  API_KEY = window.localStorage.API_KEY
+  if (!API_KEY) {
+    API_KEY = prompt('Gemini API_KEY')
+  }
 }
+window.localStorage.API_KEY = API_KEY
+
 let ytPlayer = null
 async function initVideoPlayer(videoId) {
   function onPlayerReady(event) {
