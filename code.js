@@ -1357,3 +1357,8 @@ createvideo.onclick = (evt) => {
 }
 fontSize.oninput = () => ctx.font = `${fontWeight.value} ${fontSize.value}px ` + currentFont
 fontWeight.oninput = () => ctx.font = `${fontWeight.value} ${fontSize.value}px ` + currentFont
+
+let searchTerm = window.location.hash.substring(1).trim()
+if (searchTerm > '') {
+    search(searchTerm)
+}
