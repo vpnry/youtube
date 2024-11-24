@@ -409,6 +409,14 @@ input[type='color'] {
     color: #007bff;
 }
 
+#myform {
+    margin: 16px auto;
+    display: flex;
+    max-width: 320px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
 @media print {
     #col1 {
         display: none;
