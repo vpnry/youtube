@@ -1,17 +1,25 @@
-# readabletranscripts
+# Scribe - Beautiful YouTube Transcripts with Gemini 1.5 Flash 8B LLM
 
 This repo shows how to fetch the raw YouTube transcripts and use the Gemini Flash 8B API to format them.
 Made by [ldenoue](https://twitter.com/ldenoue)
 
 # How to use
 
-open https://github.com/ldenoue/readabletranscripts and type any search term
+open https://ldenoue.github.io/readabletranscripts and type any search term
 
 click on the video, e.g. https://ldenoue.github.io/readabletranscripts/?id=8yzmCt0QwOQ
 
 You will see a summary of the video and the transcript below.
 
 # How it is done
+
+## Getting vocabulary words from the title and video description
+
+We first ask Gemini to extract important words by giving it the video title and its description.
+See https://github.com/ldenoue/readabletranscripts/blob/8466ec2f0426964933ad02e4db93e2d51fc4776f/code.js#L837
+
+This context is essential to improve the accuracy of the transcripts.
+Titles and descriptions often contain human-edited text that includes proper names, acronyms, etc.
 
 ## Breaking the transcript into chunks
 We break up the raw YouTube transcript into chunks of 512 words.
