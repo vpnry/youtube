@@ -84,7 +84,7 @@ function endOfSentence2(text) {
 
 function audioTimeUpdate(timeSeconds) {
     let time = timeSeconds * 1000
-    let ps = punctuated.querySelectorAll('.p')
+    let ps = document.body.querySelectorAll('.p')
     let last = -1
     let lastHighlightedWord = null
     let lastHighlightedParagraph = null
@@ -112,9 +112,10 @@ function audioTimeUpdate(timeSeconds) {
                 w.classList.remove('highlighted')
         }
     }
-    currentCaption = [...punctuated.querySelectorAll('.highlighted')].map(a => a.textContent)
+    /*currentCaption = [...punctuated.querySelectorAll('.highlighted')].map(a => a.textContent)
     if (currentCaption.length === 0 && !isPlaying())
         currentCaption = ['Click to Play']
+    console.log(currentCaption)*/
     for (let i = 0; i < ps.length; i++) {
         let p = ps[i]
         if (i !== last) {
@@ -456,7 +457,7 @@ function testDiff(wordTimes = [], punctuated = '') {
     othera.forEach(o => delete o.w)
     return othera
 }
-let shownWords = {}
+//let shownWords = {}
 let startTime = 0
 
 function absorb(evt) {
@@ -518,8 +519,9 @@ function msToTime(duration) {
     }
     return minutes + ":" + seconds
 }
-function buildWords(words) {
-    let r = punctuated
+function buildWords(words, r = punctuated) {
+    if (!r.shownWords)
+        r.shownWords = {}
     let p = null
     let end = false
     for (let w of words) {
@@ -534,10 +536,10 @@ function buildWords(words) {
             }
         }
         end = endOfSentence(w.o)
-        if (shownWords[key]) {
+        if (r.shownWords[key]) {
             continue;
         }
-        shownWords[key] = true
+        r.shownWords[key] = true
 
         if (w.p && w.o > '') {
             p = document.createElement('p')
@@ -1145,8 +1147,12 @@ async function punctuate(videoId, languageCode = 'en') {
       summary.innerHTML = '<p>Please set your API KEY on the <a href="/">home page</a><p>'
       return
     }
-    const vocab = await createVocabulary(videoid, videoTitle + ' ' + videoDescription, languageCode)
     let wordTimes = prepareWords(createChunks(json.chunks))
+    let originalChunks = chunkText(json.text, 64)
+    let originalWithParagraphs = originalChunks.join('\n')
+    let punctuatedOriginalTimes = testDiff(wordTimes, originalWithParagraphs)
+    buildWords(punctuatedOriginalTimes, original)
+    const vocab = await createVocabulary(videoid, videoTitle + ' ' + videoDescription, languageCode)
     computeSummary(videoid, transcript, languageCode, vocab)
     punctuated.innerHTML = '<p><i>Transcribing...</i></p>'
     let startTime = Date.now()

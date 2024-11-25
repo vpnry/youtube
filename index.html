@@ -35,25 +35,27 @@
     </div>
     <div id="items">
     </div>
-    <div id="container">
-      <div id="col1">
+    <div class="row">
+      <div class="column" id="col1">
+        <a href="/readabletranscript"><i class="fa-solid fa-home"></i></a>
+        <br>
+        <h4 id="vtitle">... title</h4>
+        <p></p>
         <div id="playercontainer">
           <div id="player"></div>
         </div>
-        <figcaption>This is an experiment using Gemini to turn raw YouTube transcripts into readable text.
-          This web app fetches the raw, unpunctuated transcript from YouTube, chunks it into 512 word pieces,
-          and asks the Gemini Flash 8B model to restore punctuation and fix the typos.
-          The app also extracts a vocabulary from the YouTube title and description, helping the LLM know the true
-          spelling of important words such as names.
-          Read more and fork on <a href="https://github.com/ldenoue/readabletranscripts">GitHub</a>
-        </figcaption>
-      </div>
-      <div id="col2">
-        <h1><a href="/readabletranscripts">Scribe</a></h1>
-        <h4 id="vtitle"></h4>
-        <div id="summary"><p>Getting summary...</p></div>
-        <div id="punctuated"></div>
         <br>
+        <b>LLM-generated Summary</b>
+        <div id="summary"><p>Getting summary...</p></div>
+      </div>
+      <div class="column">
+        <b>LLM-corrected transcript</b>
+        <div id="punctuated"></div>
+      </div>
+      <div class="column">
+        <b>Original YouTube transcript</b>
+        <div id="original">
+        </div>
       </div>
     </div>
   </div>
