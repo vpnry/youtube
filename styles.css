@@ -17,6 +17,20 @@
   box-sizing: border-box;
 }
 
+body {
+  box-sizing: border-box;
+  padding: 0px;
+  width: var(--w);
+  margin: 0;
+  padding: 0;
+  color: var(--textcolor);
+  background-color: var(--bg);
+  font-family: var(--font-name);
+  font-size: 18px;
+  line-height: 1.4;
+  overflow-x: hidden;
+}
+
 input[type=text] {
     padding: 8px;
     font-size: 1rem;
@@ -54,21 +68,6 @@ input[type=color] {
     background-color: transparent;
 }
 
-body {
-    box-sizing: border-box;
-    padding: 0px;
-    width: var(--w);
-    margin: 0;
-    padding: 0;
-    color: var(--textcolor);
-    background-color: var(--bg);
-    font-family: var(--font-name);
-    font-size: 18px;
-    margin-bottom: 128px;
-    line-height: 1.4;
-    overflow-x: hidden;
-}
-
 #playercontainer {
     width: 100%;
     aspect-ratio: 16/9;
@@ -101,9 +100,6 @@ body {
     display: none;
 }
 
-/*::selection {
-    background: var(--orange);
-  }*/
 #player {
     max-width: 100%;
     width: 100%;
@@ -181,37 +177,28 @@ div.video-annotations {
     background-color: var(--byellow);
 }
 
-.github-icon {
+#tools {
   position: fixed;
-  top: 10px;
   right: 10px;
-  font-size: 48px;
-  color: #000;
-  text-decoration: none;
-  background-color: white;
-  border-radius: 50%;
+  bottom: 10px;
+  display: none;
+  flex-direction: row;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
 }
-
-.github-icon:hover {
-  color: #007bff;
-}
-
-#generate,
-#highlighter {
-    position: fixed;
-    right: 10px;
-    bottom: 10px;
-    font-size: 24px;
-    width: 48px;
-    height: 48px;
-    background-color: black;
-    color: white;
-    border-radius: 50rem;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
+.btn {
+  font-size: 24px;
+  width: 48px;
+  height: 48px;
+  background-color: black;
+  color: white;
+  border-radius: 50rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
 }
 
 h4 {
@@ -219,37 +206,9 @@ h4 {
     font-size: 120%;
 }
 
-#oldcol1 {
-    width: calc(33% - 32px);
-    position: fixed;
-    left: 0;
-    top: var(--top);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 16px;
-}
-
 #col1 {
   position: sticky;
   top: 0;
-}
-#col2 {
-  left: 0;
-  top: 0;
-  margin-left: 33%;
-  width: 33%;
-  padding: 16px 32px 16px 0;
-}
-
-#col3 {
-  left: 0;
-  top: 0;
-  margin-left: 66%;
-  width: 33%;
-  padding: 16px 32px 16px 0;
 }
 
 .header {
@@ -371,13 +330,6 @@ form input {
     opacity: 1.0 !important;
 }
 
-h2 {
-    font-size: 1.1rem;
-    margin: 0;
-    margin-top: 8px;
-    display: none;
-}
-
 input[type='color'] {
     width: 200%;
     height: 200%;
@@ -434,15 +386,6 @@ input[type='color'] {
     width: calc(100% - 16px);
 }
 
-#tools {
-    display: none;
-}
-
-h1 {
-  margin: 16px auto;
-  text-align: center;
-  width: 100%;
-}
 #myform {
     margin: 16px auto;
     display: flex;
@@ -455,10 +398,6 @@ h1 {
 
 form {
   margin: 0;
-}
-#container {
-  margin-top: var(--top);
-  position: relative;
 }
 #items {
     margin: 16px auto;
@@ -481,6 +420,9 @@ figcaption {
   padding: 16px;
 }
 
+#thumb {
+  display: none;
+}
 /* Clear floats after the columns */
 .row:after {
   content: "";
@@ -488,13 +430,37 @@ figcaption {
   clear: both;
 }
 
+footer {
+  width: 100%;
+  text-align: center;
+  position: sticky;
+  padding: 8px;
+  top: 100%;
+}
+
 @media print {
+  #thumb {
+    display: block;
+  }
+  #playercontainer {
+    display: none;
+  }
+  .fa-solid {
+    display: none;
+  }
+    .row {
+        display: block;
+    }
     #col1 {
+        width: 100%;
+    }
+    #col3 {
         display: none;
     }
-
     #col2 {
-        margin: 0;
         width: 100%;
+    }
+    .github-corner, #highlighter, #usageDiv {
+      display: none;
     }
 }

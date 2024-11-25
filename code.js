@@ -1134,6 +1134,7 @@ async function punctuate(videoId, languageCode = 'en') {
     if (chapters.length === 0)
         chapters = computeChapters(json.description)
     vtitle.textContent = json.title
+    thumb.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
     window.document.title = 'Scribe - ' + json.title
     initVideoPlayer(videoId)
     json.chunks = json[languageCode].chunks
@@ -1225,6 +1226,7 @@ function scrollToLive() {
 }
 if (videoid) {
     myform.style.display = 'none'
+    tools.style.display = 'flex'
     punctuate(videoid, languageCode)
 } else {
     container.style.display = 'none'
@@ -1235,6 +1237,8 @@ myform.addEventListener('submit', (evt) => {
 })
 
 highlighter.onmousedown = (evt) => addHighlight(evt)
+
+pdfBtn.onclick = () => { window.print() }
 
 keyBtn.onclick = () => {
   window.localStorage.API_KEY = apiKey.value.trim()
