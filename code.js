@@ -1131,7 +1131,6 @@ async function punctuate(videoId, languageCode = 'en') {
     chapters = parseYTChapters(json.chapters) ?? []
     if (chapters.length === 0)
         chapters = computeChapters(json.description)
-    //vtitle.innerHTML = `<a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">${json.title}</a>`
     vtitle.textContent = json.title
     window.document.title = 'Scribe - ' + json.title
     initVideoPlayer(videoId)
