@@ -23,10 +23,14 @@
 <body>
   <div>
     <div id="myform">
-      Scribe - Beautiful YouTube Transcripts
-      <form id="form">
-        <input type="text" id="q" placeholder="search or paste YouTube link" value="openai">
+      <h1><a href="/">Readable YouTube Transcripts</a></h1>
+      <form method="get">
+        <input type="text" name="q" id="q" size="40" placeholder="search or paste YouTube link" value="">
         <button type="submit" id="searchBtn">Find</button>
+      </form>
+      <form method="get">
+        <input type="text" id="apiKey" size="40" placeholder="Gemini API Key" value="">
+        <button type="submit" id="keyBtn">Save</button>
       </form>
     </div>
     <div id="items">
@@ -35,34 +39,17 @@
       <div id="col1">
         <div id="playercontainer">
           <div id="player"></div>
-          <canvas id="canvas"></canvas>
         </div>
-        <div class="hori">
-          <input type="range" id="timeline" value="0" min="0" max="1000">
-          <span id="currentTime">00:00</span>
-        </div>
-        <h2>Layout</h2>
-        <div class="hidden hori space-between">
-          <input placeholder="top branding" type="text" id="author" value="Your Brand">
-          <button id="createvideo">Create Video</button>
-        </div>
-        <h2>Font</h2>
-        <div id="tools">
-          <div id="fontlist"></div>
-          <div class="hidden hori left m16">
-            <input type="range" min="32" max="128" id="fontSize" value="64">
-            <input type="range" min="400" max="900" step="100" id="fontWeight" value="500">
-          </div>
-          <br>
-          <div class="hidden hori left m16">
-            <div class="color_picker"><input id="colorpicker" type="color" value="#ffffff"></div>
-            <div class="color_picker"><input id="outlinecolorpicker" type="color" value="#ff0000"></div>
-            <input type="range" id="opacity" value="70" min="0" max="100">
-            <label>Uppercase<input type="checkbox" id="uppercase"></label>
-          </div>
-        </div>
+        <figcaption>This is an experiment using Gemini to turn raw YouTube transcripts into readable text.
+          This web app fetches the raw, unpunctuated transcript from YouTube, chunks it into 512 word pieces,
+          and asks the Gemini Flash 8B model to restore punctuation and fix the typos.
+          The app also extracts a vocabulary from the YouTube title and description, helping the LLM know the true
+          spelling of important words such as names.
+          Read more and fork on <a href="https://github.com/ldenoue/readabletranscripts">GitHub</a>
+        </figcaption>
       </div>
       <div id="col2">
+        <h1><a href="/">Scribe</a></h1>
         <h4 id="vtitle"></h4>
         <div id="summary"><p>Getting summary...</p></div>
         <div id="punctuated"></div>
@@ -71,9 +58,8 @@
     </div>
   </div>
   <div id="usageDiv">Cost</div>
-  <video id="realplayer" autoplay muted playsinline></video>
   <div id="highlighter" title="Highlight text" alt="Highlight text">
-    <i class="fa-solid fa-highlighter"></i>
+    <i class="fa-solid fa-pencil"></i>
   </div>
   <a href="https://github.com/ldenoue/readabletranscripts" class="github-icon" target="_blank" rel="noopener">
     <i class="fab fa-github"></i>

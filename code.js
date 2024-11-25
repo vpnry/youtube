@@ -1,17 +1,21 @@
 import { marked } from "https://esm.run/marked";
 import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
 
-const params = new URLSearchParams(window.location.search)
-let API_KEY = params.get('key')
-
-if (!API_KEY) {
-    API_KEY = window.localStorage.API_KEY
-    if (!API_KEY) {
-        API_KEY = prompt('Gemini API_KEY')
-    }
+const API_KEY = window.localStorage.API_KEY
+if (API_KEY) {
+  apiKey.value = API_KEY
 }
-window.localStorage.API_KEY = API_KEY
 
+const params = new URLSearchParams(window.location.search)
+const languageCode = params.get('language') || 'en'
+const followingAudio = true
+
+let chapters = []
+let jumped = null
+let currentCaption = ['Click to play']
+let userJumps = false
+let videoid = params.get('id') || params.get('v')
+let highlights = []
 let ytPlayer = null
 
 async function initVideoPlayer(videoId) {
@@ -48,7 +52,7 @@ async function initVideoPlayer(videoId) {
                 playsinline: 1,
                 autoplay: 0,
                 loop: 0,
-                controls: 0,
+                controls: 1,
                 disablekb: 0,
                 rel: 0,
             },
@@ -73,24 +77,13 @@ async function initVideoPlayer(videoId) {
     }
 }
 
-const followingAudio = true
-let chapters = []
-let jumped = null
-let currentCaption = ['Click to play']
 
 function endOfSentence2(text) {
     return text.endsWith('. ') || text.endsWith('? ') || text.endsWith('! ')
 }
 
-let userJumps = false
-
-function updateTimeCaption(timeSeconds) {
-    currentTime.textContent = msToTime(parseInt(timeSeconds * 1000)) + '/' + msToTime(videoDuration * 1000)
-}
 function audioTimeUpdate(timeSeconds) {
-    updateTimeCaption(timeSeconds)
     let time = timeSeconds * 1000
-    timeline.value = time
     let ps = punctuated.querySelectorAll('.p')
     let last = -1
     let lastHighlightedWord = null
@@ -122,7 +115,6 @@ function audioTimeUpdate(timeSeconds) {
     currentCaption = [...punctuated.querySelectorAll('.highlighted')].map(a => a.textContent)
     if (currentCaption.length === 0 && !isPlaying())
         currentCaption = ['Click to Play']
-    current = null
     for (let i = 0; i < ps.length; i++) {
         let p = ps[i]
         if (i !== last) {
@@ -130,7 +122,6 @@ function audioTimeUpdate(timeSeconds) {
                 p.classList.remove('livep')
             }
         } else {
-            current = p
             if (!p.classList.contains('livep')) {
                 p.classList.add('livep')
                 if (followingAudio) {
@@ -185,7 +176,6 @@ function chunkText(text, maxWords = 4000) {
 }
 const modelName = 'gemini-1.5-flash-8b'
 const model = await getGenerativeModel(API_KEY, { model: modelName });
-window.model = model
 
 async function ytsr(q) {
     if (!q)
@@ -195,7 +185,6 @@ async function ytsr(q) {
         return {}
     try {
         let response = await fetchData('https://vercel-scribe.vercel.app/api/hello?url=' + encodeURIComponent('https://www.youtube.com/search?q=' + trimmed), true)
-        console.log('response=', response)
         let html = response.data
         let preamble = "var ytInitialData = {"
         let idx1 = html.indexOf(preamble)
@@ -225,12 +214,13 @@ async function ytsr(q) {
     }
 }
 
-async function search(q) {
-    let json = await ytsr(q)
+async function search(q, redirect = true) {
+  if (redirect)
+    window.location.href = '/?q=' + encodeURIComponent(q)
+  let json = await ytsr(q)
     if (json.error)
         items.innerHTML = 'Error:' + json.error
     else if (json.items) {
-        window.location.href = '#' + q
         items.innerHTML = ''
         for (let item of json.items) {
             let d = document.createElement('div')
@@ -238,6 +228,7 @@ async function search(q) {
             d.innerHTML = `<a href="?id=${item.id}"><img src="https://img.youtube.com/vi/${item.id}/mqdefault.jpg"></a><div><a href="?id=${item.id}">${item.name || item.title}</a><div>${item.duration} - ${item.publishedTimeText || item.published}</div></div><br>`
             items.appendChild(d)
         }
+        items.style.display = 'flex'
     }
 }
 
@@ -577,7 +568,7 @@ function buildWords(words) {
             span.addEventListener('click', (evt) => {
                 absorb(evt)
                 if (span.classList.contains('highlighted'))
-                    realplayer.pause()
+                    pause()
                 else
                     play(span.start)
             })
@@ -604,6 +595,9 @@ function isPlaying() {
     return ytPlayer ? ytPlayer.getPlayerState() === 1 : !realplayer.paused
 }
 let lastStart = null
+function pause() {
+  ytPlayer ? ytPlayer.pauseVideo() === 1 : realplayer.pause()
+}
 function play(start) {
     console.log('play', start)
     const playing = isPlaying()
@@ -711,36 +705,6 @@ async function convertAudioFromUrlToBase64(url) {
     }
 }
 
-async function transcribe() {
-    console.log('transcribe')
-    const prompt = "Generate audio diarization for this interview, and output a simple json format with keys: 'speaker', 'transcription', 'start', 'end'. If you can infer the speaker, please do. If not, use speaker A, speaker B, etc."
-    const b64 = await convertAudioFromUrlToBase64('/static/cached/5.m4a')
-    const result = await model.generateContent([
-        {
-            inlineData: {
-                mimeType: "audio/mp3",
-                data: b64
-            }
-        },
-        { text: prompt },
-    ]);
-
-    // Print the response.
-    let res = result.response.text()
-    console.log(res)
-    let s = res.indexOf('[')
-    let e = res.indexOf(']')
-    //console.log(res)
-    let payload = JSON.parse(res.substring(s, e + 1))
-    console.log(payload)
-}
-async function chapterize(transcript) {
-    // examples from https://console.cloud.google.com/vertex-ai/publishers/google/model-garden/gemini-1.5-flash-001?hl=en
-    const chapterPrompt = `Chapterize the video content by grouping the video content into chapters and providing a name for each chapter with its timecode. Please only capture key events and highlights. If you are not sure about any info, please do not make it up. Return the result in the JSON format with keys 'chapterName' and 'timecode'. Here is the video content: `
-    const result = await getModelAnswer(`${chapterPrompt} ${transcript}`)
-    let json = result.response.text()
-    console.log(json)
-}
 async function createVocabulary(videoId, description = '', languageCode = 'en') {
     const key = languageCode + '-vocab-' + videoId
     const prevVocab = await localforage.getItem(key)
@@ -754,8 +718,6 @@ async function createVocabulary(videoId, description = '', languageCode = 'en') 
     return vocab
 }
 
-let ctx = canvas.getContext('2d')
-let highlights = []
 function addHighlight(evt) {
     absorb(evt)
     let s = window.getSelection().toString().trim()
@@ -791,11 +753,6 @@ function updateHighlights() {
             }
         }
     }
-}
-canvas.onclick = () => {
-    realplayer.paused ? realplayer.play() : realplayer.pause()
-    if (isPlaying())
-        realplayer.muted = false
 }
 
 function highlightSelection() {
@@ -920,21 +877,6 @@ function findCaptionAt(time) {
     return res
 }
 
-function drawVideo() {
-    let w = canvas.width
-    let h = vh * w / vw
-    ctx.fillStyle = 'black'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-    ctx.drawImage(realplayer, 0, 0, vw, vh, 0, 0, w, h)
-    const padLeft = 64
-    const padBottom = 64
-    const caption = uppercase.checked ? currentCaption.join('').toUpperCase() : currentCaption.join('')
-    wrapText(ctx, caption, padLeft, w - 2 * padLeft, h - padBottom, fontSize.value * 1.2)
-    const pad = 32
-    drawStrokedText(ctx, author.value, pad, pad, 'white', 'top', { blur: 4, x: 2, y: 2, color: 'black' })
-    requestAnimationFrame(drawVideo)
-}
-
 async function getSummary(videoId, transcript, lang = 'en', vocab) {
     const key = [lang, 'sum', videoId].join('-')
     let d = await localforage.getItem(key)
@@ -947,7 +889,6 @@ async function getSummary(videoId, transcript, lang = 'en', vocab) {
   - answer in plain text without mentioning the language
   Transcript to summarize:
   """${transcript}"""`
-    //const result = await model.generateContent([summaryPrompt])
     const result = await getModelAnswer(summaryPrompt)
     let summaryText = result.response.text()
     if (summaryText.indexOf(lang) === 0)
@@ -1088,10 +1029,6 @@ async function getLocal(videoId, languageCode = 'en') {
     const obj = {}
     if (json.error || json.videoDetails === undefined)
         return { error: 'invalid video' }
-    for (let s of json.streamingData.formats)
-        console.log(decodeURIComponent(s.url))
-    for (let s of json.streamingData.adaptiveFormats)
-        console.log(decodeURIComponent(s.url))
     obj.videoId = json.videoDetails.videoId
     obj.chapters = json.videoDetails.chapters
     obj.title = json.videoDetails.title
@@ -1178,68 +1115,45 @@ async function getChunks(url) {
         return []
     }
 }
+
+async function computeSummary(videoid, transcript, languageCode, vocab) {
+  const summaryText = await getSummary(videoid, transcript, languageCode, vocab)
+  summary.innerHTML = marked(summaryText)
+}
+
 async function punctuate(videoId, languageCode = 'en') {
-    //let json = await (await fetch('/ytt?id=' + videoid + '&language=' + language)).json()
     let json = await getLocal(videoId, languageCode)
-    window.json = json
     if (json.error) {
         container.style.display = 'none'
         items.innerHTML = '<b>No transcript for this video</b>'
         return
     }
-    window.json = json
     chapters = parseYTChapters(json.chapters) ?? []
     if (chapters.length === 0)
         chapters = computeChapters(json.description)
-    vtitle.innerHTML = `<a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">${json.title}</a>`
+    //vtitle.innerHTML = `<a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">${json.title}</a>`
+    vtitle.textContent = json.title
     window.document.title = 'Scribe - ' + json.title
     initVideoPlayer(videoId)
-    /*realplayer.ontimeupdate = (evt) => audioTimeUpdate(realplayer.currentTime)
-    realplayer.onloadedmetadata = (evt) => {
-        realplayer.currentTime = 0.5
-        timeline.max = realplayer.duration * 1000
-        timeline.addEventListener('input', () => {
-            updateTimeCaption(timeline.value / 1000)
-            currentCaption = findCaptionAt(timeline.value)
-            drawVideo()
-        })
-        timeline.addEventListener('change', () => {
-            updateTimeCaption(timeline.value / 1000)
-            userJumps = true
-            currentCaption = findCaptionAt(timeline.value)
-            drawVideo()
-            realplayer.currentTime = timeline.value / 1000
-        })
-
-        vw = realplayer.videoWidth
-        vh = realplayer.videoHeight
-        canvas.width = 1280
-        canvas.height = 720
-        console.log(realplayer.videoWidth, realplayer.videoHeight)
-        ctx.font = `${fontWeight.value} ${fontSize.value}px ` + currentFont
-        ctx.fillStyle = 'rgb(245,220,51)'
-        drawVideo()
-    }
-    realplayer.src = json.videoUrl*/
     json.chunks = json[languageCode].chunks
     json.text = json.chunks.map(c => c.text).join(' ')
     let transcript = json.text
-    window.originalText = transcript
     videoDuration = json.duration
-
     const videoTitle = json.title || ''
     const videoDescription = json.description || ''
-    const vocab = await createVocabulary(videoid, videoTitle + ' ' + videoDescription, languageCode)
-    //chapterize(transcript)
-    let wordTimes = prepareWords(createChunks(json.chunks))
-    const summaryText = await getSummary(videoid, transcript, languageCode, vocab)
-    summary.innerHTML = marked(summaryText)
 
+    if (!API_KEY) {
+      summary.innerHTML = '<p>Please set your API KEY on the <a href="/">home page</a><p>'
+      return
+    }
+    const vocab = await createVocabulary(videoid, videoTitle + ' ' + videoDescription, languageCode)
+    let wordTimes = prepareWords(createChunks(json.chunks))
+    computeSummary(videoid, transcript, languageCode, vocab)
     punctuated.innerHTML = '<p><i>Transcribing...</i></p>'
     let startTime = Date.now()
     let chunks = chunkText(transcript, chunkSize)
     console.log('n chunks=', chunks.length)
-    const DEBUG = false//window.location.hostname === 'localhost'
+    const DEBUG = false
     const puncKey = languageCode + '-punc-' + videoId
     const prevPunctuatedText = await localforage.getItem(puncKey)
     if (!DEBUG && prevPunctuatedText) {
@@ -1304,53 +1218,26 @@ function scrollToLive() {
     let y = p.getBoundingClientRect().top + window.pageYOffset - player.offsetHeight
     window.scrollTo({ left: 0, top: y, behavior: 'smooth' })
 }
-const languageCode = params.get('language') || 'en'
-let videoid = params.get('id') || params.get('v')
 if (videoid) {
     myform.style.display = 'none'
     punctuate(videoid, languageCode)
 } else {
     container.style.display = 'none'
 }
-myform.addEventListener('submit', (evt) => { absorb(evt); search(q.value) })
+myform.addEventListener('submit', (evt) => {
+  if (!(q.value.trim() > ''))
+    absorb(evt);
+})
 
 highlighter.onmousedown = (evt) => addHighlight(evt)
-currentTime.onclick = (evt) => scrollToLive()
 
-let currentFont = 'Montserrat'
-const fonts = ["Courgette", "system-ui", "Arsenal", "Montserrat", "Lobster Two", "Lobster", "Satisfy", "Gloria Hallelujah", "Kaushan Script", "Covered By Your Grace", "Abril Fatface", "Righteous", "Orbitron", "Pacifico"];
-for (let f of fonts) {
-    let prop = document.createElement('div')
-    prop.className = 'prop'
-    prop.style.fontFamily = f
-    prop.textContent = f
-    if (f === currentFont)
-        prop.classList.add('selected')
-    prop.onclick = (evt) => {
-        currentFont = prop.textContent
-        //author.style.fontFamily = currentFont
-        ctx.font = `${fontWeight.value} ${fontSize.value}px ${currentFont}`
-        fontlist.querySelectorAll('.prop').forEach(p => {
-            if (p.textContent === currentFont)
-                p.classList.add('selected')
-            else
-                p.classList.remove('selected')
-        })
-    }
-    fontlist.appendChild(prop)
-}
-createvideo.onclick = (evt) => {
-    absorb(evt)
-    if (highlights.length === 0)
-        return alert(`Please highlight a few passages you'd like to cite`)
-    lastStart = null
-    play(highlights[0].start * 100)
-}
-fontSize.oninput = () => ctx.font = `${fontWeight.value} ${fontSize.value}px ` + currentFont
-fontWeight.oninput = () => ctx.font = `${fontWeight.value} ${fontSize.value}px ` + currentFont
+keyBtn.onclick = () => {
+  window.localStorage.API_KEY = apiKey.value.trim()
+  window.location.reload()
+}  
 
-let searchTerm = window.location.hash.substring(1).trim()
+let searchTerm = params.get('q')
 if (searchTerm > '') {
     q.value = searchTerm
-    search(searchTerm)
+    search(searchTerm, false)
 }

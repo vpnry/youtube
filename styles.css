@@ -1,5 +1,6 @@
 :root {
     --w: 100%;
+    --formw: 800px;
     --font-name: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     --byellow: #F38181;
     --showts: block;
@@ -9,6 +10,7 @@
     --thumbcolor: #888;
     --rangeheight: 16px;
     --radius: 5px;
+    --top: 0px;
 }
 
 input[type=text] {
@@ -52,9 +54,8 @@ body {
     box-sizing: border-box;
     padding: 0px;
     width: var(--w);
-    width: 100vw;
-    height: 100vh;
-    margin: 0 auto;
+    margin: 0;
+    padding: 0;
     color: var(--textcolor);
     background-color: var(--bg);
     font-family: var(--font-name);
@@ -74,6 +75,7 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
+    background-color: black;
 }
 
 #captions {
@@ -175,16 +177,30 @@ div.video-annotations {
     background-color: var(--byellow);
 }
 
+.github-icon {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  font-size: 48px;
+  color: #000;
+  text-decoration: none;
+  background-color: white;
+  border-radius: 50%;
+}
+
+.github-icon:hover {
+  color: #007bff;
+}
+
 #generate,
 #highlighter {
     position: fixed;
-    right: 0;
-    bottom: 0;
-    font-size: 32px;
-    width: 64px;
-    margin: 16px;
-    height: 64px;
-    background-color: #F38181;
+    right: 10px;
+    bottom: 10px;
+    font-size: 24px;
+    width: 48px;
+    height: 48px;
+    background-color: black;
     color: white;
     border-radius: 50rem;
     display: flex;
@@ -192,24 +208,31 @@ div.video-annotations {
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    font-size: 32px;
 }
 
 h4 {
-    margin: 0;
+    margin: 8px auto;
+    font-size: 120%;
 }
 
 #col1 {
     width: calc(50% - 32px);
     position: fixed;
     left: 0;
-    top: 0;
+    top: var(--top);
     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
 }
 
 #col2 {
-    margin-left: 50%;
-    padding: 16px 32px 16px 0;
+  left: 0;
+  top: 0;
+  margin-left: 50%;
+  padding: 16px 32px 16px 0;
 }
 
 .header {
@@ -226,9 +249,6 @@ h4 {
     gap: 8px;
 }
 
-.hidden {
-    display: none;
-}
 #timeline {
     width: 100%;
 }
@@ -401,36 +421,41 @@ input[type='color'] {
     display: none;
 }
 
-.github-icon {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    font-size: 48px;
-    color: #000;
-    text-decoration: none;
+h1 {
+  margin: 16px auto;
+  text-align: center;
+  width: 100%;
 }
-
-.github-icon:hover {
-    color: #007bff;
-}
-
 #myform {
     margin: 16px auto;
     display: flex;
-    width: 600px;
+    width: var(--formw);
     max-width: calc(100% - 32px);
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
+
+form {
+  margin: 0;
+}
+#container {
+  margin-top: var(--top);
+  position: relative;
+}
 #items {
     margin: 16px auto;
-    display: flex;
-    width: 600px;
+    display: none;
+    width: var(--formw);
     max-width: calc(100% - 32px);
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
+}
+
+figcaption {
+  font-style: italic;
+  opacity: 0.6;
 }
 @media print {
     #col1 {
