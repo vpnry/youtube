@@ -1123,6 +1123,11 @@ async function computeSummary(videoid, transcript, languageCode, vocab) {
   summary.innerHTML = marked(summaryText)
 }
 
+function showError(msg) {
+  summary.textContent = ''
+  punctuated.textContent = msg
+}
+
 async function punctuate(videoId, languageCode = 'en') {
     let json = await getLocal(videoId, languageCode)
     if (json.error) {
@@ -1137,6 +1142,12 @@ async function punctuate(videoId, languageCode = 'en') {
     thumb.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
     window.document.title = 'Scribe - ' + json.title
     initVideoPlayer(videoId)
+
+    if (!json[languageCode]) {
+      showError('No transcript for this video')
+      return
+    }
+
     json.chunks = json[languageCode].chunks
     json.text = json.chunks.map(c => c.text).join(' ')
     let transcript = json.text
@@ -1155,7 +1166,7 @@ async function punctuate(videoId, languageCode = 'en') {
     buildWords(punctuatedOriginalTimes, original)
     const vocab = await createVocabulary(videoid, videoTitle + ' ' + videoDescription, languageCode)
     computeSummary(videoid, transcript, languageCode, vocab)
-    punctuated.innerHTML = '<p><i>Transcribing...</i></p>'
+    punctuated.innerHTML = '<p><span class="placeholder">Transcribing...</span></p>'
     let startTime = Date.now()
     let chunks = chunkText(transcript, chunkSize)
     console.log('n chunks=', chunks.length)

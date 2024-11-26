@@ -25,12 +25,16 @@
     <div id="myform">
       <h1><a href="/readabletranscripts">Readable Transcripts</a></h1>
       <form method="get">
-        <input type="text" name="q" id="q" size="40" placeholder="search or paste YouTube link" value="">
-        <button type="submit" id="searchBtn">Find</button>
+        <div class="flexrow">
+          <input type="text" name="q" id="q" size="40" placeholder="search or paste YouTube link" value="">
+          <button type="submit" id="searchBtn">Find</button>
+        </div>
       </form>
       <form method="get">
-        <input type="text" id="apiKey" size="40" placeholder="Gemini API Key" value="">
-        <button type="submit" id="keyBtn">Save</button>
+        <div class="flexrow">
+          <input type="text" id="apiKey" size="40" placeholder="Gemini API Key" value="">
+          <button type="submit" id="keyBtn">Save</button>
+        </div>
       </form>
     </div>
     <div id="items">
@@ -38,14 +42,14 @@
     <div id="container" class="row">
       <div class="column" id="col1">
         <h2><a href="/readabletranscripts"><i class="btn fa-solid fa-home"></i></a></h2>
-        <b id="vtitle">... title</b>
+        <b id="vtitle"><span class="placeholder">&nbsp;</span></b>
         <p></p>
         <div id="playercontainer">
           <div id="player"></div>
         </div>
         <img id="thumb">
         <br>
-        <div id="summary"><p>Getting summary...</p></div>
+        <div id="summary"><span class="placeholder">Getting summary...</span></div>
       </div>
       <div class="column" id="col2">
         <b>LLM-corrected transcript</b>
@@ -58,13 +62,12 @@
       </div>
     </div>
   </div>
-  <footer id="footer">Created by <a href="https://twitter.com/ldenoue">@ldenoue</a></footer>
+  <footer id="footer">Created by <a href="https://twitter.com/ldenoue">@ldenoue</a> - Discussion on <a href="https://news.ycombinator.com/item?id=42238890">Hacker News</a></footer>
   <div id="usageDiv">Cost</div>
   <div id="tools">
     <div class="btn" id="highlighter" title="Highlight text" alt="Highlight text">
       <i class="fa-solid fa-pencil"></i>
     </div>
-
     <a title="Print" href="#" class="btn" id="pdfBtn">
       <i class="fa-solid fa-file-pdf"></i>
     </a>
