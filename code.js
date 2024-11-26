@@ -215,9 +215,15 @@ async function ytsr(q) {
     }
 }
 
+function spin(text = '') {
+  return `<div class="simplerow"><i class="spinner fa-solid fa-circle-notch"></i> ${text}</div>`
+}
+
 async function search(q, redirect = true) {
   if (redirect)
     window.location.href = '/?q=' + encodeURIComponent(q)
+  items.style.display = 'flex'
+  items.innerHTML = spin('Searching')
   let json = await ytsr(q)
     if (json.error)
         items.innerHTML = 'Error:' + json.error
@@ -229,7 +235,6 @@ async function search(q, redirect = true) {
             d.innerHTML = `<a href="?id=${item.id}"><img src="https://img.youtube.com/vi/${item.id}/mqdefault.jpg"></a><div><a href="?id=${item.id}">${item.name || item.title}</a><div>${item.duration} - ${item.publishedTimeText || item.published}</div></div><br>`
             items.appendChild(d)
         }
-        items.style.display = 'flex'
     }
 }
 
@@ -1139,7 +1144,9 @@ async function punctuate(videoId, languageCode = 'en') {
     if (chapters.length === 0)
         chapters = computeChapters(json.description)
     vtitle.textContent = json.title
+    
     thumb.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+    const img = new Image(thumb.src)
     window.document.title = 'Scribe - ' + json.title
     initVideoPlayer(videoId)
 
@@ -1147,7 +1154,7 @@ async function punctuate(videoId, languageCode = 'en') {
       showError('No transcript for this video')
       return
     }
-
+    await localforage.setItem(videoId, json)
     json.chunks = json[languageCode].chunks
     json.text = json.chunks.map(c => c.text).join(' ')
     let transcript = json.text
@@ -1166,7 +1173,7 @@ async function punctuate(videoId, languageCode = 'en') {
     buildWords(punctuatedOriginalTimes, original)
     const vocab = await createVocabulary(videoid, videoTitle + ' ' + videoDescription, languageCode)
     computeSummary(videoid, transcript, languageCode, vocab)
-    punctuated.innerHTML = '<p><span class="placeholder">Transcribing...</span></p>'
+    punctuated.innerHTML = spin('Transcribing...')
     let startTime = Date.now()
     let chunks = chunkText(transcript, chunkSize)
     console.log('n chunks=', chunks.length)
@@ -1236,6 +1243,9 @@ function scrollToLive() {
     window.scrollTo({ left: 0, top: y, behavior: 'smooth' })
 }
 if (videoid) {
+  vtitle.innerHTML = spin('Fetching video info')
+  summary.innerHTML = spin('Summarizing')
+  punctuate.innerHTML = spin('Cleaning transcripts')
     myform.style.display = 'none'
     tools.style.display = 'flex'
     punctuate(videoid, languageCode)
@@ -1254,7 +1264,7 @@ pdfBtn.onclick = () => { window.print() }
 keyBtn.onclick = () => {
   window.localStorage.API_KEY = apiKey.value.trim()
   window.location.reload()
-}  
+} 
 
 let searchTerm = params.get('q')
 if (searchTerm > '') {
