@@ -1,3 +1,15 @@
+A folk of https://github.com/ldenoue/readabletranscripts
+
+It is modified to use with free models on https://aistudio.google.com
+
+
+
+
+
+----
+# Original README.md
+
+
 # Scribe - Beautiful YouTube Transcripts with Gemini 1.5 Flash 8B LLM
 
 This repo shows how to fetch the raw YouTube transcripts and use the Gemini Flash 8B API to format them.
